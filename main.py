@@ -106,7 +106,7 @@ def get_cached_response(query: str):
     query_type = classify_query(query)
     
     # Set threshold based on query type
-    threshold = 0.95 if query_type == QueryType.TIMESENSITIVE else 0.85
+    threshold = 0.90 if query_type == QueryType.TIMESENSITIVE else 0.80
     
     query_embedding = np.array(get_embedding(query)).reshape(1, -1)
     
