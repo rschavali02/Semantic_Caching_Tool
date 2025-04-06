@@ -94,21 +94,21 @@ Here are some curl commands to test the caching functionality:
 ```bash
 curl -X POST http://localhost:8000/api/query \
   -H "Content-Type: application/json" \
-  -d '{"query": "What is the current weather in New York?", "forceRefresh": false}'
+  -d '{"query": "What is the current sitaution on tariffs?", "forceRefresh": false}'
 ```
 
 2. Test cache hit (run a semantically similar query):
 ```bash
 curl -X POST http://localhost:8000/api/query \
   -H "Content-Type: application/json" \
-  -d '{"query": "How is the weather in New York right now?", "forceRefresh": false}'
+  -d '{"query": "What’s the latest update on tariffs?", "forceRefresh": false}'
 ```
 
 3. Force refresh the cache:
 ```bash
 curl -X POST http://localhost:8000/api/query \
   -H "Content-Type: application/json" \
-  -d '{"query": "What is the current weather in New York?", "forceRefresh": true}'
+  -d '{"query": "What is the current sitaution on tariffs?", "forceRefresh": true}'
 ```
 
 4. Check cache info for a specific query:
