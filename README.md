@@ -24,6 +24,7 @@ The backend is built with FastAPI and implements a semantic caching system with 
       > Time-sensative queries should have a high threshold as information varies vs. Evergreen queries. I set the threshold for Evergreen queries to 0.8 based on the precident from this paper: https://arxiv.org/html/2411.05276v2
    - Automatic cache expiration for time-sensitive queries
       > Time-sensitive caches need to expire overtime. I handle this by appending a question asking the llm when the query should expire, I then append this time as a datetime object and set the expiry condition using Redis' time to live feature rather than the default LRU condition.
+      > If the time if incorrectly parsed, the expiration time defaults to 5 minutes. 
 
 2. **Semantic Caching**
    - Uses OpenAI's `text-embedding-ada-002` model for embeddings
