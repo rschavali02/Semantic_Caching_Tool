@@ -179,5 +179,9 @@ We use OpenAI's `text-embedding-ada-002` model for several reasons:
 1. **Cache Storage**
    - Currently Evergreen caches have no expiration date while the Time-sensitive queries do. There should be a condition to remove Evergreen queries when the cache is full. 
 
-3. **Performance Enhancements**
+2. **Performance Enhancements**
    - Add response streaming for long-form content, for longer queries we might need a better strategy to classify
+  
+3. **Current Information**
+   - The OpenAI API (GPT-3.5/4) cannot retrieve current information because it's a language model with knowledge cutoff dates - it doesn't have real-time access to the internet or current data.
+   - We could upgrade the model we are using in this case as the seperation of time-sensitive and evergreen queries is implemented. 
