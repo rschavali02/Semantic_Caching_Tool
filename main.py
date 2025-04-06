@@ -17,6 +17,7 @@ from typing import Optional
 # Load environment variables and initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+
 # Initialize FastAPI
 app = FastAPI()
 
