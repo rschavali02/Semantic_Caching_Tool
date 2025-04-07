@@ -115,11 +115,13 @@ def get_cached_response(query: str):
         stored_embedding = np.array(stored_data["embedding"]).reshape(1, -1)
         similarity = cosine_similarity(query_embedding, stored_embedding)[0][0]
         
+        print(f"Similarity score for '{stored_data['query']}': {similarity}")  # Debug line
+        
         # Use higher threshold for time-sensitive queries
         if similarity >= threshold:
-            return stored_data["response"]
+            return stored_data, similarity
     
-    return None
+    return None, 0.0
 
 def cache_response(query: str, response: str, expiry_time: Optional[datetime] = None):
     """Store query-response pair in Redis with expiration"""
@@ -195,13 +197,14 @@ async def handle_query(request: Request):
         
         if not force_refresh:
             try:
-                cached_response = get_cached_response(query)
+                cached_response, similarity = get_cached_response(query)
                 if cached_response:
                     return {
-                        "response": cached_response["main_response"],  # Modified to get main response only
+                        "response": cached_response["main_response"],
                         "metadata": {
                             "source": "cache",
-                            "query_type": query_type.value
+                            "query_type": query_type.value,
+                            "similarity_score": similarity
                         }
                     }
             except Exception as cache_error:
@@ -244,7 +247,8 @@ async def handle_query(request: Request):
                         datetime.now() + timedelta(minutes=5)  # Default 5 minutes if parsing fails
                     )
                 else:
-                    main_response = answer
+                    # If response doesn't contain MAIN_RESPONSE, clean up any EXPIRY text
+                    main_response = answer.split("EXPIRY:")[0].strip()
                     expiry_time = datetime.now() + timedelta(minutes=5)
             except Exception as e:
                 print(f"Error parsing time-sensitive response: {e}")
@@ -268,26 +272,3 @@ async def handle_query(request: Request):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
-
-@app.get("/api/cache-info/{query_hash}")
-async def get_cache_info(query_hash: str):
-    """Get information about a cached query"""
-    key = f"query:{query_hash}"
-    try:
-        # Get TTL
-        # Use TTL for time-sensitive queries and LRU for Evergreen queries
-        ttl = redis_client.ttl(key)
-        
-        # Get cached data
-        cached_data = redis_client.get(key)
-        if cached_data:
-            data = json.loads(cached_data)
-            return {
-                "ttl": ttl,
-                "data": data,
-                "exists": True
-            }
-        return {"exists": False}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    #Created for testing of ttl system on time-sensitive queries
