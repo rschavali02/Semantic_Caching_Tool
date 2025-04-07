@@ -117,13 +117,7 @@ curl -X POST http://localhost:8000/api/query \
   -d '{"query": "What is the current sitaution on tariffs?", "forceRefresh": true}'
 ```
 
-4. Check cache info for a specific query:
-```bash
-# First, get the query hash from a response, then:
-curl http://localhost:8000/api/cache-info/fd9bcf84280849b40fb395c259dc32b2
-```
-
-5. Test an evergreen query:
+4. Test an evergreen query:
 ```bash
 curl -X POST http://localhost:8000/api/query \
   -H "Content-Type: application/json" \
