@@ -126,11 +126,10 @@ curl -X POST http://localhost:8000/api/query \
 
 To verify the 5-minute cache expiration:
 1. Make a time-sensitive query
-2. Check its TTL immediately:
+2. Check the time remaining on the query
 ```bash
-docker-compose exec redis redis-cli TTL "query:your_query_hash"
+curl http://localhost:8000/api/cache-expiry
 ```
-3. Wait a few minutes and check again to see the TTL decrease
 
 ## Design Decisions
 
@@ -154,7 +153,6 @@ We use OpenAI's `text-embedding-ada-002` model for several reasons:
    - Redis for distributed caching support
      > Redis can also be switched to a cloud database for better scalability
      > It is a robust solution for caching
-   - Hash-based keys for efficient lookups
    - TTL support for automatic expiration
 
 ## Tradeoffs and Optimizations
