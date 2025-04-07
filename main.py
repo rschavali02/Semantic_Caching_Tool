@@ -272,3 +272,26 @@ async def handle_query(request: Request):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+@app.get("/api/cache-expiry")
+async def get_cache_expiry():
+    """Get expiry information for all cached queries"""
+    try:
+        cache_info = []
+        for key in redis_client.scan_iter("query:*"):
+            ttl = redis_client.ttl(key)
+            data = json.loads(redis_client.get(key))
+            cache_info.append({
+                "query": data["query"],
+                "ttl_seconds": ttl,
+                "expires_in": f"{ttl/60:.1f} minutes" if ttl > 0 else "never",
+                "query_type": data["query_type"],
+                "timestamp": data["timestamp"]
+            })
+        
+        return {
+            "cache_count": len(cache_info),
+            "caches": cache_info
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching cache info: {str(e)}")
