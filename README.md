@@ -126,7 +126,10 @@ curl -X POST http://localhost:8000/api/query \
 
 To verify the 5-minute cache expiration:
 1. Make a time-sensitive query
-2. Wait a few minutes and check again to see the cache expire
+2. Check the time remaining on the query
+```bash
+curl http://localhost:8000/api/cache-expiry
+```
 
 ## Design Decisions
 
