@@ -19,13 +19,19 @@ The backend is built with FastAPI and implements a semantic caching system with 
 
 1. **Query Classification**
    - Regex-based classification of queries into time-sensitive and evergreen
+      > I used Regex espressions to classify to remove more unessecary llm costs. Scalability wise I believe this approach is better than implementing a model.
    - Different similarity thresholds for different query types
+      > Time-sensative queries should have a high threshold as information varies vs. Evergreen queries. I set the threshold for Evergreen queries to 0.8 based on the precident from this paper: https://arxiv.org/html/2411.05276v2
    - Automatic cache expiration for time-sensitive queries
+      > Time-sensitive caches need to expire overtime. I handle this by appending a question asking the llm when the query should expire, I then append this time as a datetime object and set the expiry condition using Redis' time to live feature rather than the default LRU condition.
+      > If the time if incorrectly parsed, the expiration time defaults to 5 minutes. 
 
 2. **Semantic Caching**
    - Uses OpenAI's `text-embedding-ada-002` model for embeddings
    - Cosine similarity for semantic matching
+     > I use a threshold score for semantic caching
    - Redis for cache storage with TTL support
+     > The time-sensitive queries expire with TTL
 
 3. **API Endpoints**
    - `/api/query`: Main endpoint for processing queries
@@ -111,13 +117,7 @@ curl -X POST http://localhost:8000/api/query \
   -d '{"query": "What is the current sitaution on tariffs?", "forceRefresh": true}'
 ```
 
-4. Check cache info for a specific query:
-```bash
-# First, get the query hash from a response, then:
-curl http://localhost:8000/api/cache-info/fd9bcf84280849b40fb395c259dc32b2
-```
-
-5. Test an evergreen query:
+4. Test an evergreen query:
 ```bash
 curl -X POST http://localhost:8000/api/query \
   -H "Content-Type: application/json" \
@@ -140,20 +140,21 @@ We use OpenAI's `text-embedding-ada-002` model for several reasons:
 - High-quality embeddings with good semantic understanding
 - Cost-effective compared to larger models
 - Fast inference time
-- 1536-dimensional vectors providing good balance between precision and performance
 
 ### Caching Strategy
 
 1. **Query Classification**
    - Time-sensitive queries (weather, news, etc.): 5-minute default TTL
    - Evergreen queries (facts, definitions): No expiration
-   - Higher similarity threshold (0.95) for time-sensitive queries
-   - Lower threshold (0.85) for evergreen queries
+     > With more time, I would have implemented and LRU expiration for Evergreen queries.
+   - Higher similarity threshold (0.90) for time-sensitive queries
+   - Lower threshold (0.80) for evergreen queries
 
 2. **Cache Implementation**
    - Redis for distributed caching support
+     > Redis can also be switched to a cloud database for better scalability
+     > It is a robust solution for caching
    - Hash-based keys for efficient lookups
-   - JSON serialization for metadata storage
    - TTL support for automatic expiration
 
 ## Tradeoffs and Optimizations
@@ -164,35 +165,17 @@ We use OpenAI's `text-embedding-ada-002` model for several reasons:
    - Higher thresholds reduce false positives but increase cache misses
    - Lower thresholds improve cache hits but may return less accurate responses
 
-2. **Cache Storage**
-   - Storing full embeddings increases memory usage
-   - Alternative: Could store quantized embeddings at the cost of accuracy
-
-3. **Query Classification**
-   - Regex-based classification is fast but may miss edge cases
-   - Alternative: Could use ML-based classification at the cost of latency
+2. **Query Classification**
+   - Regex-based classification is fast but may miss edge cases due to hardcoded setting
+   - Alternative: Could use ML-based classification at the cost of latency and increased complexity
 
 ### Potential Optimizations
+1. **Cache Storage**
+   - Currently Evergreen caches have no expiration date while the Time-sensitive queries do. There should be a condition to remove Evergreen queries when the cache is full. 
 
-1. **Embedding Optimizations**
-   - Implement embedding quantization
-   - Add embedding clustering for faster similarity search
-   - Consider using approximate nearest neighbors (ANN) for large-scale deployment
-
-2. **Caching Improvements**
-   - Implement cache warming for common queries
-   - Add cache eviction policies based on usage patterns
-   - Consider hierarchical caching for different query types
-
-3. **Performance Enhancements**
-   - Add batch processing for multiple similar queries
-   - Implement request coalescing for concurrent similar queries
-   - Add response streaming for long-form content
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+2. **Performance Enhancements**
+   - Add response streaming for long-form content, for longer queries we might need a better strategy to classify
+  
+3. **Current Information**
+   - The OpenAI API (GPT-3.5/4) cannot retrieve current information because it's a language model with knowledge cutoff dates - it doesn't have real-time access to the internet or current data.
+   - We could upgrade the model we are using in this case as the seperation of time-sensitive and evergreen queries is implemented. 
