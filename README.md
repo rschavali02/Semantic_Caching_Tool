@@ -35,7 +35,7 @@ The backend is built with FastAPI and implements a semantic caching system with 
 
 3. **API Endpoints**
    - `/api/query`: Main endpoint for processing queries
-   - `/api/cache-info/{query_hash}`: Debug endpoint for cache inspection
+   - `/api/cache-expiry`: Endpoint for checking the expiry time on caches
    - `/health`: Health check endpoint
 
 ### Frontend (React)
@@ -57,7 +57,7 @@ The backend is built with FastAPI and implements a semantic caching system with 
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone [<repository-url>](https://github.com/rschavali02/Semantic_Caching_Tool.git)
    cd semantic-cache-chat
    ```
 
@@ -152,7 +152,8 @@ We use OpenAI's `text-embedding-ada-002` model for several reasons:
 2. **Cache Implementation**
    - Redis for distributed caching support
      > Redis can also be switched to a cloud database for better scalability
-     > It is a robust solution for caching
+     > It is a robust solution for caching, viewed this intro site on pros: https://redis.io/blog/what-is-semantic-caching/
+     > Had built in funcionality for caching such as cache expiry
    - TTL support for automatic expiration
 
 ## Tradeoffs and Optimizations
