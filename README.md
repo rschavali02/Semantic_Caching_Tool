@@ -57,7 +57,7 @@ The backend is built with FastAPI and implements a semantic caching system with 
 
 1. Clone the repository:
    ```bash
-   git clone [<repository-url>](https://github.com/rschavali02/Semantic_Caching_Tool.git)
+   git clone (https://github.com/rschavali02/Semantic_Caching_Tool.git)
    cd semantic-cache-chat
    ```
 
